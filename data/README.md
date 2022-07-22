@@ -1,4 +1,3 @@
-#review commnent posted(delete later)
 ## Setting up the data
 
 The benchmarking scripts expects 2 files to be present in `data/huffpost`.
