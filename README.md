@@ -156,12 +156,14 @@ optional arguments:
 To run with stock python and stock technologies, logging the performance to `logs/stock_stock.log`, we would run (after creating the appropriate environment as above) from `src` directory:
 ```shell
 conda activate doc_class_stock
+mkdir -p ../logs  # create `logs` dir in the parent dir if not present
 python run_benchmarks.py -l ../logs/stock_stock.log
 ```
 
 To run with Intel® technologies, logging the performance to `logs/intel_intel.log`, we woud run (after creating the appropriate environment as above):
 ```shell
 conda activate doc_class_intel
+mkdir -p ../logs  # create `logs` dir in the parent dir if not present
 python run_benchmarks.py -i -l ../logs/intel_intel.log
 ```
 
