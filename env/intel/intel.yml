@@ -1,9 +1,0 @@
-name: intel
-channels:
-  - intel
-dependencies:
-  - python=3.7
-  - pip
-  - intel-aikit-modin=2021.4.1
-  - pip:
-    - nltk

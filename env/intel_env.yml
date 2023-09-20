@@ -1,0 +1,10 @@
+name: intelligent_indexing_intel
+channels:
+  - intel
+  - conda-forge
+dependencies:
+  - intelpython3_core=2023.2.0=py39_0
+  - scikit-learn-intelex=2023.2.0
+  - modin-all=0.23.0
+  - nltk=3.8.1
+  

@@ -17,15 +17,38 @@ import pathlib
 import time
 
 import joblib
+import modin.pandas as pd
+import ray
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
+from sklearnex.svm import SVC
 
-from utils.preprocessing import (
-    clean_headline,
-    clean_link,
-    clean_short_description,
-    tokenize
-)
+from utils.preprocessing import (clean_headline, clean_link,
+                                 clean_short_description, tokenize)
+
+os.environ["MODIN_ENGINE"] = "ray"
+
+
+def get_data(path_to_csv: str) -> pd.DataFrame:
+    """Read in and clean data
+
+    Args:
+        path_to_csv (str): processed data
+    """
+    data = pd.read_csv(path_to_csv)[
+        ['category', 'headline', 'short_description', 'link']
+    ]
+    data = data.dropna(subset=['headline', 'short_description', 'link'])
+
+    data.link = data.link.apply(clean_link)
+    data.short_description = data.short_description \
+        .apply(clean_short_description)
+    data.headline = data.headline.apply(clean_headline)
+
+    data['text'] = data.link + " " + data.short_description \
+        + " " + data.headline
+    data['tokens'] = data.text.apply(tokenize)
+    return data
 
 
 def main(flags):
@@ -41,40 +64,11 @@ def main(flags):
         logging.basicConfig(filename=flags.logfile, level=logging.DEBUG)
     logger = logging.getLogger()
 
-    if flags.intel:
-        logging.debug("Loading intel libraries...")
+    # if flags.intel:
+    logging.debug("Loading intel libraries...")
 
-        import modin.pandas as pd
-        from sklearnex.svm import SVC
-        import ray
-        ray.init()
-
-    else:
-        logging.debug("Loading stock libraries...")
-
-        import pandas as pd
-        from sklearn.svm import SVC
-
-    def get_data(path_to_csv: str) -> pd.DataFrame:
-        """Read in and clean data
-
-        Args:
-            path_to_csv (str): processed data
-        """
-        data = pd.read_csv(path_to_csv)[
-            ['category', 'headline', 'short_description', 'link']
-        ]
-        data = data.dropna(subset=['headline', 'short_description', 'link'])
-
-        data.link = data.link.apply(clean_link)
-        data.short_description = data.short_description \
-            .apply(clean_short_description)
-        data.headline = data.headline.apply(clean_headline)
-
-        data['text'] = data.link + " " + data.short_description \
-            + " " + data.headline
-        data['tokens'] = data.text.apply(tokenize)
-        return data
+    # ray.init()
+    ray.init(runtime_env={'env_vars': {'__MODIN_AUTOIMPORT_PANDAS__': '1'}})
 
     # Read and clean training and testing data
     logger.info("Preprocessing Data...")
@@ -153,13 +147,6 @@ if __name__ == "__main__":
                         type=str,
                         default="",
                         help="log file to output benchmarking results to")
-
-    parser.add_argument('-i',
-                        '--intel',
-                        default=False,
-                        action="store_true",
-                        help="use intel accelerated technologies where available"
-                        )
 
     parser.add_argument('-p',
                         '--preprocessing_only',
