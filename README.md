@@ -78,24 +78,29 @@ To demonstrate the application of multiclass document classification, using the 
 ## Get Started
 Start by **defining an environment variable** that will store the workspace path, this can be an existing directory or one to be created in further steps. This ENVVAR will be used for all the commands executed using absolute paths. 
 
+[//]: # (capture: baremetal)
 ```bash
-export WORKSPACE=/path/to/my/workspace/directory
+export WORKSPACE=$PWD/intelligent-indexing
 ```
 
 Define `DATA_DIR` and `OUTPUT_DIR` as follows:
 
+[//]: # (capture: baremetal)
 ```bash
 export DATA_DIR=$WORKSPACE/data
 export OUTPUT_DIR=$WORKSPACE/output
 ```
 
 ### Download the Workflow Repository
-Create a working directory for the workflow and clone the [Intelligent Indexing for Incoming Correspondence](https://github.com/oneapi-src/intelligent-indexing) repository into your working
-directory.
+Create a working directory for the workflow and clone the [Intelligent Indexing for Incoming Correspondence](https://github.com/oneapi-src/intelligent-indexing) repository into your working directory.
 
+[//]: # (capture: baremetal)
 ```bash
 mkdir -p $WORKSPACE && cd $WORKSPACE
-git clone https://github.com/oneapi-src/intelligent-indexing.git .
+```
+
+```bash
+git clone https://github.com/intel-innersource/frameworks.ai.platform.sample-apps.intelligent-indexing.git $WORKSPACE
 ```
 
 ### Set up conda
@@ -196,6 +201,7 @@ After downloading the data for benchmarking under these requirements, do the fol
    
 * Use the `process_data.py` script to generate the `huffpost/train_all.csv` and `huffpost/test.csv` files for benchmarking. This script expects `News_Category_Dataset_v3.json` to be present in the same directory.
 
+    [//]: # (capture: baremetal)
     ```bash
     cd $DATA_DIR
     python process_data.py
@@ -224,6 +230,7 @@ optional arguments:
 
 To run with Intel® technologies, and log the performance to `$OUTPUT_DIR/logs/intel.log`, we would run (after creating the appropriate environment as above) from `src` directory:
 
+[//]: # (capture: baremetal)
 ```shell
 cd $WORKSPACE/src
 mkdir -p $OUTPUT_DIR/logs  # create logs dir in the OUTPUT_DIR dir if not present
@@ -232,6 +239,7 @@ python run_benchmarks.py -l $OUTPUT_DIR/logs/intel.log
 
 Inspect the generated log to check `Test Accuracy`, `Training Time`, `Inference Time` and `Total time` data:
 
+[//]: # (capture: baremetal)
 ```bash
 tail $OUTPUT_DIR/logs/intel.log
 ```
@@ -243,6 +251,10 @@ Follow these steps to restore your ``$WORKSPACE`` directory to an initial step. 
 ```bash
 conda deactivate
 conda remove --name intelligent_indexing_intel --all -y
+```
+
+[//]: # (capture: baremetal)
+```bash
 cd $DATA_DIR
 rm -r huffpost News_Category_Dataset_v3.json
 rm -r $OUTPUT_DIR/logs
