@@ -1,6 +1,9 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: BSD-3-Clause
+
 ARG BASE_IMAGE_NAME="ubuntu"
-ARG BASE_IMAGE_TAG="20.04"
-# Inherit <___>
+ARG BASE_IMAGE_TAG="22.04"
+
 FROM ${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -20,8 +23,7 @@ SHELL ["/bin/bash", "-c"]
 ARG CONDA_INSTALL_PATH=/opt/conda
 ARG MINICONDA_VERSION="latest"
 # Miniconda Installation
-RUN apt-get update && \
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O miniconda.sh && \
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p ${CONDA_INSTALL_PATH} && \
     rm miniconda.sh && \
     ln -s ${CONDA_INSTALL_PATH}/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
@@ -35,12 +37,10 @@ RUN conda install -n base conda-libmamba-solver -y && \
 # Create Conda Environment + Install reqs via conda
 WORKDIR /workspace
 COPY env env
-# COPY setupenv.sh setupenv.sh
-# RUN bash setupenv.sh && \
 RUN INTEL_PATH=./env/intel_env.yml && \
-    ENV_NAME=$(cat $INTEL_PATH | grep -Po "(?<=name:)(.*)") && \
-    conda env create -f $INTEL_PATH && \
-    conda install -n $ENV_NAME -c intel ipykernel -y && \
+    ENV_NAME=$(awk '/name:/  {print $2}' "$INTEL_PATH") && \
+    conda env create -f "$INTEL_PATH" && \
+    conda install -n "$ENV_NAME" -c intel ipykernel -y && \
     conda create -n jupyter_server -c intel nb_conda_kernels notebook -y
 # Clean steps
 RUN rm -rf env/ && \
