@@ -1,4 +1,4 @@
-# **Scikit-Learn Intelligent Indexing for Incoming Correspondence**
+# **Intelligent Indexing**
 
 ## Introduction
 Many industries ingest massive volumes of complex documents and must utilize manual processes to both understand the contents of and route them to the relevant parties. AI-based Natural Language Processing (NLP) solutions for classifying documents can be one solution to automate this process, saving massive amounts of workforce, time, and cost while still maintaining human-level performance.
