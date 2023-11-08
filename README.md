@@ -58,7 +58,7 @@ The dataset used for this demo is a set of ~200k news article with their respect
 The included dataset is lightly preprocessed from above to split into train/test according to an 85:15 train test split. To download and setup this dataset for benchmarking, follow the instructions listed [here](#download-the-dataset).
 
 ## Validated Hardware Details
-There are workflow-specific hardware and software setup requirements depending on how the workflow is run. Bare metal development system and Docker\* image running locally have the same system requirements.
+There are workflow-specific hardware and software setup requirements to run this use case.
 
 | Recommended Hardware
 | ----------------------------
@@ -92,7 +92,7 @@ export OUTPUT_DIR=$WORKSPACE/output
 ```
 
 ### Download the Workflow Repository
-Create a working directory for the workflow and clone the [Intelligent Indexing for Incoming Correspondence](https://github.com/oneapi-src/intelligent-indexing) repository into your working directory.
+Create a working directory for the workflow and clone the [Intelligent Indexing](https://github.com/oneapi-src/intelligent-indexing) repository into your working directory.
 
 [//]: # (capture: baremetal)
 ```bash
@@ -175,10 +175,9 @@ To setup the data for benchmarking, do the following:
 You can execute the references pipelines using the following environments:
 * Bare Metal
 * Jupyter Notebook
-* Docker
 
 ### Run Using Bare Metal
-Follow these instructions to set up and run this workflow on your own development system. For running a provided Docker image with Docker, see the [Docker instructions](#run-using-docker).
+Follow these instructions to set up and run this workflow on your own development system.
 
 #### Set Up System Software
 Our examples use the ``conda`` package and environment on your local computer. If you don't already have ``conda`` installed, go to [Set up conda](#set-up-conda) or see the [Conda Linux installation instructions](https://docs.conda.io/projects/conda/en/stable/user-guide/install/linux.html).
@@ -194,8 +193,8 @@ conda activate intelligent_indexing_intel
 
 The benchmarking scripts expects 2 files to be present in `data/huffpost`.
 
-`data/huffpost/train_all.csv` : training data
-`data/huffpost/test.csv` : testing data
+* `data/huffpost/train_all.csv`: training data
+* `data/huffpost/test.csv`: testing data
 
 After downloading the data for benchmarking under these requirements, do the following:
    
@@ -325,108 +324,13 @@ Once in Jupyter, click on **IntelligentIndexing.ipynb** to get an interactive de
 Clean Bare Metal Environment executing next commands:
 
 ```bash
-conda deactivate
+conda activate base
+conda remove --name intelligent_indexing_intel --all -y
 conda remove --name jupyter_server --all -y
 cd $DATA_DIR
 rm -r huffpost News_Category_Dataset_v3.json
 rm -r $OUTPUT_DIR/logs
 ```
-
-### Run Using Docker
-Follow these instructions to set up and run our provided Docker image.
-For running on bare metal, see the [bare metal instructions](#run-using-bare-metal).
-
-#### Set Up Docker Engine
-You will need to install Docker Engine on your development system.
-Note that while **Docker Engine** is free to use, **Docker Desktop** may require you to purchase a license. See the [Docker Engine Server installation instructions](https://docs.docker.com/engine/install/#server) for details.
-
-#### Setup Docker Compose
-Ensure you have Docker Compose installed on your machine. If you don't have this tool installed, consult the official [Docker Compose installation documentation](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually).
-
-```bash
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-mkdir -p $DOCKER_CONFIG/cli-plugins
-curl -SL https://github.com/docker/compose/releases/download/v2.7.0/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
-docker compose version
-```
-
-#### Set Up Docker Image
-If your environment requires a proxy to access the internet, export your
-development system's proxy settings to the docker environment at `docker-compose.yml` file.
-
-1. Follow the instructions described on [Get Started](#get-started) to set required environment variables.
-
-2. Add next environment variables used to build and run the docker image:
-
-    ```bash
-    export PORT=8888 # port used by jupyter server
-    export COMPOSE_PROJECT_NAME=intelligent-indexing
-    ```
-
-3. Build the docker image using docker-compose.yml file provided in `docker` directory:
-
-    ```bash
-    cd $WORKSPACE/docker
-    docker compose build
-    ```
-
-The container workflow will ingest the data in the `$DATASET_DIR` directory and save the output in `$OUTPUT_DIR` directory. This means that `$DATASET_DIR` and `$OUTPUT_DIR` should be set as volumes inside the container.
-
-#### Run Docker Image
-1. Execute next commands to run the image and start a new bash session inside the container:
-    ```bash
-    cd $WORKSPACE/docker
-    docker compose -p ${USER} run intelligent-indexing bash
-    ```
-2. Execute [Run Workflow](#run-workflow) steps.
-3. Follow the [Clean Up Docker Containers](#clean-up-docker-containers) steps.
-
-#### Run Jupyter Notebook Server
-In `docker` folder, there is a docker-compose file to build a container quickly and easily with everything necessary to be able to connect to a Jupyter Notebook server and run our demonstrative notebook. Build and run the provided docker image, as shown:
-
-1. Change to working directory
-
-    ```bash 
-    cd $WORKSPACE/docker
-    ```
-
-2. Execute Jupyter Notebook Server.
-
-    ```
-    docker compose -p ${USER} up intelligent-indexing --build 
-    ```
-
-3. Follow these [steps](#connect-to-jupyter-notebook-server) and connect to Jupyter Notebook Dashboard.
-
-4. To clean all files generated by Jupyter Notebook execute cell **Clean Up Workspace** at the end of your testing. Before executing the cell back up your important files.
-
-5. Stop Jupyter Notebook Server created by docker compose and remove it.
-
-    ```
-    docker compose -p ${USER} down
-    ```
-
-
-#### Clean Up Docker Containers
-1. Follow these clean steps inside the docker container. Before executing next steps back up files saved in `$OUTPUT_DIR/logs`.
-
-    ```bash
-    cd $DATA_DIR
-    rm -r huffpost News_Category_Dataset_v3.json
-    rm -r $OUTPUT_DIR/logs
-    ```
-
-2. Perform the following command to close the interactive terminal shell and stop the container.
-    ```
-    exit
-    ```
-2. Run the following command to stop all services and containers created by docker compose and remove them.
-
-    ```bash
-    cd $WORKSPACE/docker
-    docker compose -p ${USER} down
-    ```
 
 ## Expected Output
 Benchmark results are stored in the `$OUTPUT_DIR/logs/intel.log` file. 
