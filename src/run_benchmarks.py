@@ -22,12 +22,18 @@ import ray
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearnex.svm import SVC
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk import download
+from typing import List
+from nltk.tokenize import word_tokenize
+from nltk.util import ngrams
+import utils.preprocessing as tools
 
-from utils.preprocessing import (clean_headline, clean_link,
-                                 clean_short_description, tokenize)
+stop_words = None
+stemmer = None
 
 os.environ["MODIN_ENGINE"] = "ray"
-
 
 def get_data(path_to_csv: str) -> pd.DataFrame:
     """Read in and clean data
@@ -40,23 +46,68 @@ def get_data(path_to_csv: str) -> pd.DataFrame:
     ]
     data = data.dropna(subset=['headline', 'short_description', 'link'])
 
-    data.link = data.link.apply(clean_link)
+    data.link = data.link.apply(tools.clean_link)
     data.short_description = data.short_description \
-        .apply(clean_short_description)
-    data.headline = data.headline.apply(clean_headline)
+        .apply(tools.clean_short_description)
+    data.headline = data.headline.apply(tools.clean_headline)
 
     data['text'] = data.link + " " + data.short_description \
         + " " + data.headline
     data['tokens'] = data.text.apply(tokenize)
     return data
 
+def tokenize(text: str) -> List[str]:
+    """turns a body of text into a collection of tokens
 
-def main(flags):
+    Args:
+        text (str): the body of text to tokenize
+
+    Returns:
+        List[str] : collection of tokens
+    """
+    global stop_words, stemmer
+    tokens = word_tokenize(text)
+    tokens = [stemmer.stem(tk) for tk in tokens]
+    tokens = [tk for tk in tokens if tk not in stop_words]
+    n_grams = ngrams(tokens, 2)
+    tokens = tokens + [' '.join(grams) for grams in n_grams]
+    return tokens
+
+def main():
     """Setup model for inference and perform benchmarking
 
     Args:
         flags: benchmarking flags
     """
+    global stop_words, stemmer
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-l',
+                        '--logfile',
+                        type=str,
+                        default="",
+                        help="log file to output benchmarking results to")
+
+    parser.add_argument('-p',
+                        '--preprocessing_only',
+                        default=False,
+                        action="store_true",
+                        help='only perform preprocessing step')
+
+    parser.add_argument('-s',
+                        '--save_model_dir',
+                        default=None,
+                        type=str,
+                        required=False,
+                        help="directory to save model to"
+                        )
+    flags = parser.parse_args()
+
+    # Ensure that the required NLTK libraries are downloaded
+    download('punkt')
+    download('stopwords')
+    stop_words = set(stopwords.words('english'))
+    stemmer = PorterStemmer()
 
     if flags.logfile == "":
         logging.basicConfig(level=logging.DEBUG)
@@ -137,27 +188,4 @@ def main(flags):
 
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-l',
-                        '--logfile',
-                        type=str,
-                        default="",
-                        help="log file to output benchmarking results to")
-
-    parser.add_argument('-p',
-                        '--preprocessing_only',
-                        default=False,
-                        action="store_true",
-                        help='only perform preprocessing step')
-
-    parser.add_argument('-s',
-                        '--save_model_dir',
-                        default=None,
-                        type=str,
-                        required=False,
-                        help="directory to save model to"
-                        )
-
-    main(parser.parse_args())
+    main()
