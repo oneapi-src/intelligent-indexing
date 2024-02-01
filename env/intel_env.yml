@@ -3,8 +3,9 @@ channels:
   - intel
   - conda-forge
 dependencies:
-  - intelpython3_core=2023.2.0=py39_0
-  - scikit-learn-intelex=2023.2.0
-  - modin-all=0.23.0
-  - nltk=3.8.1
-  
+  - python=3.10
+  - intelpython3_core==2024.0.0
+  - scikit-learn-intelex==2024.0.1
+  - modin-all==0.24.1
+  - nltk==3.8.1
+  - kaggle==1.5.16

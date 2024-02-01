@@ -1,7 +1,7 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause
 
 # pylint: disable=C0415,E0401,R0914
@@ -11,20 +11,6 @@ Helper functions for preprocessing
 """
 
 import re
-from typing import List
-
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.util import ngrams
-
-# Ensure that the required NLTK libraries are downloaded
-nltk.download('punkt')
-nltk.download('stopwords')
-
-stop_words = set(stopwords.words('english'))
-stemmer = PorterStemmer()
 
 
 def clean_headline(headline: str) -> str:
@@ -78,20 +64,3 @@ def clean_short_description(short_description: str) -> str:
     short_description = short_description.lower()
     short_description = re.sub(r"[^\w]", " ", short_description)
     return short_description
-
-
-def tokenize(text: str) -> List[str]:
-    """turns a body of text into a collection of tokens
-
-    Args:
-        text (str): the body of text to tokenize
-
-    Returns:
-        List[str] : collection of tokens
-    """
-    tokens = word_tokenize(text)
-    tokens = [stemmer.stem(tk) for tk in tokens]
-    tokens = [tk for tk in tokens if tk not in stop_words]
-    n_grams = ngrams(tokens, 2)
-    tokens = tokens + [' '.join(grams) for grams in n_grams]
-    return tokens
